@@ -16,7 +16,7 @@
 > 已在以下版本验证：`0.1.7-rc.1`。
 > 已知不兼容：`0.1.7-rc.2`。
 
-用 DSH 的 SDK provider 把「角色层」和「执行层」拆成两个独立 runtime：角色层只负责对话、人格表达和用户确认，执行层使用无人格、独立进程、独立 DSH home 的 worker 完成任务。
+用 DSH 的 SDK provider 把「角色层」和「执行层」拆成两个独立 runtime：角色层只负责对话、人格表达和用户确认，执行层使用不继承角色人格、独立进程、独立 DSH home 的 worker 完成任务。
 
 > 这个仓库不是插件，也不是客户端项目。它是文档、脱敏示例配置和可复现验证方法的集合。
 
@@ -49,12 +49,12 @@
          │ dispatch_worker
          ▼
 ┌──────────────────┐
-│  执行层（worker）  │  ← 独立进程，无人格
+│  执行层（worker）  │  ← 独立进程，不继承角色人格
 │  沙箱 + 完整工具   │
 └──────────────────┘
 ```
 
-角色层只挂三类工具：
+角色层只挂以下工具：
 
 - `ask_user_question`
 - `web_search`
@@ -82,6 +82,19 @@
 - `session-mode` 不支持同一会话内切换模式；已经跑过 turn 的会话只能新开会话。
 - `dsh-sdk` provider 不会自动创建 worker profile，需要手动初始化。
 - 第三方插件如果需要 `source.kind: 'plugin'`，在 `0.1.7-rc.1` 下需要写成 `plugin:<name>`。
+
+## Non-goals
+
+This repository does not define or implement:
+
+- a system-level authorization mechanism;
+- task lifecycle or orchestration;
+- concurrency or retry semantics;
+- crash recovery or transactional execution;
+- TOCTOU protection;
+- OS-level or network security isolation.
+
+These concerns are outside the scope of this repository.
 
 ## 快速开始
 

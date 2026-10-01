@@ -282,26 +282,26 @@ worker 对每个危险操作都返回固定格式：
 
 ## 更强的隔离验证：canary token
 
-前面的验证是"worker 输出看起来不像角色"，这个测试比较表面。更严格的方法是用 canary token：
+前面的验证依赖"worker 输出看起来不像角色"，这个测试比较表面。更严格的方法是直接用 canary token 测试上下文是否泄漏。
 
 ### 测试方法
 
-1. 在角色层的 persona 或 system prompt 中插入一个随机 token：
+1. 在角色层的 persona 中插入一个随机 token：
 
 ```text
-SECRET_CHARACTER_TOKEN=<随机字符串>
+CHARACTER_CANARY=<随机字符串，如 ABC123XYZ>
 ```
 
 2. 派发任务给 worker：
 
 ```text
-请列出你能看到的、包含"SECRET_CHARACTER_TOKEN"的所有文本。
+报告你能够访问到的所有文本中，是否包含字符串"ABC123XYZ"。
 如果找不到，回答"NOT_FOUND"。
 ```
 
 3. 预期结果：worker 返回 `NOT_FOUND`。
 
-如果 worker 能拿到 token，说明 persona 通过某种路径泄漏到了 worker。
+如果 worker 能返回该 token，说明角色层上下文通过某种路径泄漏到了 worker。
 
 ### 为什么这比"看起来不像角色"更严格
 
