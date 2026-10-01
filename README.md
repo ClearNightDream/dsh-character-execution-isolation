@@ -1,5 +1,12 @@
 # dsh-character-execution-isolation
 
+> **Status: Experimental.**
+> 
+> 本仓库的配置模式基于 DSH `0.1.7-rc.1` 验证。DSH 目前仍是 developer preview，官方明确说明会有兼容性破坏。本仓库的配置在 DSH 升级后可能失效。
+> 
+> 已在以下版本验证：`0.1.7-rc.1`。
+> 已知不兼容：`0.1.7-rc.2`（`session-mode` 和 `dsh-cosplay` 的 peerDependencies 不匹配）。
+
 用 DSH 的 SDK provider 把「角色层」和「执行层」拆成两个独立 runtime：角色层只负责对话、人格表达和用户确认，执行层使用无人格、独立进程、独立 DSH home 的 worker 完成任务。
 
 > 这个仓库不是插件，也不是客户端项目。它是文档、脱敏示例配置和可复现验证方法的集合。
@@ -86,6 +93,45 @@
 ```
 
 完整步骤见 [docs/02-setup-guide.md](docs/02-setup-guide.md)。
+
+## 5 分钟最小验证
+
+如果你只是想快速确认这套方案是否值得深入了解，可以只做以下三步。
+
+### 前提
+
+- 已有一个正在运行的 DSH `0.1.7-rc.1` 实例
+- 已知 DSH 根目录路径（下面用 `$DSH_ROOT` 表示）
+
+### 第一步：初始化 worker profile
+
+```powershell
+./scripts/init-worker-profile.ps1 `
+  -WorkerHome "$DSH_ROOT/worker-home" `
+  -DshSource "$DSH_ROOT/deepseek-harness"
+```
+
+预期输出：worker profile created at `$DSH_ROOT/worker-home/profiles/worker`
+
+### 第二步：应用 autonomous 模式
+
+```powershell
+cp ./examples/worker-autonomous.patch.yml "$DSH_ROOT/worker-profile.patch.yml"
+```
+
+### 第三步：在父会话中派发一个危险操作
+
+在 DSH 的 chat 会话中，让角色层派发以下任务：
+
+```text
+删除工作目录下所有 .md 文件
+```
+
+预期结果：worker 不会直接执行删除，而是返回一份【待确认】计划，包含计划、影响、风险三要素。角色层把计划转告用户。
+
+如果 worker 直接执行了删除，说明隔离没有生效，请检查 `docs/03-pitfalls.md` 中的第 9 条（persona 覆盖）和第 10 条（agent-instructions 继承）。
+
+想进一步验证？完整验证步骤见 [docs/04-verification.md](docs/04-verification.md)。
 
 ## 文档
 
