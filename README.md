@@ -1,11 +1,20 @@
 # dsh-character-execution-isolation
 
-> **Status: Experimental.**
+> **Status: Experimental · Scope: Runtime/Context Isolation**
 > 
-> 本仓库的配置模式基于 DSH `0.1.7-rc.1` 验证。DSH 目前仍是 developer preview，官方明确说明会有兼容性破坏。本仓库的配置在 DSH 升级后可能失效。
+> 本仓库验证的是 **runtime 和 context 层面的隔离**：独立进程、独立 `DSH_HOME`、独立 profile、worker 不继承 persona 和 `AGENTS.md`。
+> 
+> 本仓库**不提供** execution security isolation：
+> - 不定义审批协议（审批是 system prompt 约定，不是系统状态）
+> - 不定义任务生命周期、并发模型、失败恢复、幂等性
+> - 不阻止 worker 通过 `shell-launcher` 委托外部进程绕过沙箱
+> - 不隔离 OS 用户权限、网络、环境变量、共享 workspace
+> 
+> 如果你需要的是完整的安全隔离，这个仓库不够用。
+> 如果你需要的是"角色层和执行层解耦的参考实现"，这个仓库提供了可复现的验证路径。
 > 
 > 已在以下版本验证：`0.1.7-rc.1`。
-> 已知不兼容：`0.1.7-rc.2`（`session-mode` 和 `dsh-cosplay` 的 peerDependencies 不匹配）。
+> 已知不兼容：`0.1.7-rc.2`。
 
 用 DSH 的 SDK provider 把「角色层」和「执行层」拆成两个独立 runtime：角色层只负责对话、人格表达和用户确认，执行层使用无人格、独立进程、独立 DSH home 的 worker 完成任务。
 
@@ -132,6 +141,33 @@ cp ./examples/worker-autonomous.patch.yml "$DSH_ROOT/worker-profile.patch.yml"
 如果 worker 直接执行了删除，说明隔离没有生效，请检查 `docs/03-pitfalls.md` 中的第 9 条（persona 覆盖）和第 10 条（agent-instructions 继承）。
 
 想进一步验证？完整验证步骤见 [docs/04-verification.md](docs/04-verification.md)。
+
+## 范围与限制
+
+### 本仓库验证了什么
+
+| 维度 | 状态 |
+|---|---|
+| 上下文隔离 | ✅ worker 不继承父对话历史 |
+| 配置隔离 | ✅ 独立 profile、独立 `DSH_HOME` |
+| 身份隔离 | ✅ worker 不继承父会话 persona |
+| 指令隔离 | ✅ worker 不自动继承 `AGENTS.md` |
+| 工具隔离 | ✅ 父会话和 worker 的工具集独立配置 |
+
+### 本仓库没有定义什么
+
+| 维度 | 状态 | 说明 |
+|---|---|---|
+| 审批协议 | ❌ 未定义 | 审批靠 system prompt 约定，不是系统状态。用户说"我知道了"可能被误判为确认，重新派发时模型可能改变计划 |
+| 执行连续性 | ❌ 未定义 | 确认前后是两个 one-shot worker，不是同一次执行上下文。TOCTOU 风险在长任务中会暴露 |
+| 任务生命周期 | ❌ 未定义 | 没有 job id、approval id、parent-child correlation、resume / retry / cancel 语义 |
+| 并发模型 | ❌ 未定义 | 多个 `dispatch_worker` 同时运行时，谁共享 workspace、谁锁、谁排序，均未定义 |
+| 失败恢复 | ❌ 未定义 | worker 崩溃、部分成功、重复派发的行为未定义 |
+| 安全隔离 | ❌ 未定义 | worker 仍共享 OS 用户权限、网络、环境变量；可通过 `shell-launcher` 委托外部进程绕过沙箱 |
+
+### 如果你要补这些能力
+
+它们需要 DSH 上游提供系统级支持（审批协议、job 管理、沙箱强化），不是本仓库能解决的。本仓库的目标是**提供一个可验证的起点**，而不是一个完整的执行编排系统。
 
 ## 文档
 
