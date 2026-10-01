@@ -1,5 +1,7 @@
 # dsh-character-execution-isolation
 
+[English](README.en.md) | 中文
+
 > **Status: Experimental · Scope: Runtime/Context Isolation**
 > 
 > 本仓库验证的是 **runtime 和 context 层面的隔离**：独立进程、独立 `DSH_HOME`、独立 profile、worker 不继承 persona 和 `AGENTS.md`。
