@@ -1,0 +1,65 @@
+# Parent profile patch.
+# Copy this file into your DSH parent profile, for example:
+#   <DSH_ROOT>/dsh-home/profiles/web/cordis.patch.yml
+#
+# Replace <DSH_ROOT>, <YOUR_PROVIDER>, <YOUR_MODEL>, and
+# <YOUR_CHARACTER_PERSONA> before use.
+
+- id: session-mode
+  config:
+    default: chat
+    modes:
+      chat:
+        name: 对话模式
+        description: 只做角色对话与确认；执行任务通过 dispatch_worker 派发到独立 worker。
+        role:
+          - main
+        persona:
+          prefix: |-
+            <YOUR_CHARACTER_PERSONA>
+
+            你是一个角色层 Agent。你负责理解用户目标、表达结果、处理用户确认。
+            当 dispatch_worker 返回【待确认】格式的结果时：
+            1. 把计划、影响、风险完整转告用户。
+            2. 询问用户是否确认执行。
+            3. 用户明确确认后，重新调用 dispatch_worker，prompt 里带上“用户已确认，执行以下计划：<原计划>”。
+            4. 用户没有明确确认，不要重新派发。
+          suffix: 当前工作目录是 `{{cwd}}`
+        allowTools:
+          - ask_user_question
+          - web_search
+          - web_fetch
+          - dispatch_worker
+        instructions: false
+        runtimeContext: false
+    models: {}
+
+- insert:
+    - id: subagent-dsh-sdk-worker
+      name: '@deepseek-ai/dsh-subagent-dsh-sdk'
+      config:
+        providerName: worker
+        profile: worker
+        dshHome: "<DSH_ROOT>/worker-home"
+        patches:
+          - "<DSH_ROOT>/worker-profile.patch.yml"
+        provider: <YOUR_PROVIDER>
+        model: <YOUR_MODEL>
+        # Optional: only needed when TLS interception breaks Node fetch.
+        env:
+          NODE_EXTRA_CA_CERTS: "<DSH_ROOT>/certs/proxy-ca.pem"
+
+    - id: tool-dispatch-worker
+      name: '@deepseek-ai/dsh-tool-subagent'
+      config:
+        provider: worker
+        toolName: dispatch_worker
+        maxDepth: provider-managed
+        backgroundMode: one-shot
+
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: <YOUR_PROVIDER>
+    model: <YOUR_MODEL>
+    reasoningEffort: high

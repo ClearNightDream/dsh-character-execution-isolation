@@ -1,0 +1,11 @@
+- id: sandbox-policy
+  config:
+    mode: read-only
+    workspaceRoot: !!js process.cwd()
+
+- id: approval
+  config:
+    policy: ask
+
+- id: agent-instructions
+  disabled: true

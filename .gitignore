@@ -1,0 +1,9 @@
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+node_modules/
+.env
+__pycache__/
+.venv/
+*.swp
