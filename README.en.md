@@ -45,16 +45,16 @@ User
   │
   ▼
 ┌──────────────────┐
-│ Character layer   │  ← only user-visible layer
-│ (chat)            │
-│ persona + tools   │
+│ Character layer  │  ← only user-visible layer
+│ (chat)           │
+│ persona + tools  │
 └────────┬─────────┘
          │ dispatch_worker
          ▼
 ┌──────────────────┐
-│ Execution layer   │  ← separate process, no inherited persona
-│ (worker)          │
-│ sandbox + tools   │
+│ Execution layer  │  ← separate process, no inherited persona
+│ (worker)         │
+│ sandbox + tools  │
 └──────────────────┘
 ```
 
