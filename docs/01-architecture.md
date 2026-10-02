@@ -77,16 +77,16 @@ DSH 内置的 in-process subagent 运行在同一个 host 进程内，和父会�
   ▼
 ┌──────────────────────┐
 │ 角色层（chat）        │
-│ - persona             │
-│ - ask_user_question   │
-│ - web_search          │
-│ - web_fetch           │
-│ - dispatch_worker     │
+│ - persona            │
+│ - ask_user_question  │
+│ - web_search         │
+│ - web_fetch          │
+│ - dispatch_worker    │
 └──────────┬───────────┘
            │ dispatch_worker(prompt)
            ▼
 ┌──────────────────────┐
-│ dsh-sdk provider      │
+│ dsh-sdk provider     │
 │ 启动独立 runtime      │
 │ 使用 worker profile   │
 │ 使用 worker DSH_HOME  │
@@ -95,7 +95,7 @@ DSH 内置的 in-process subagent 运行在同一个 host 进程内，和父会�
            ▼
 ┌──────────────────────┐
 │ 执行层（worker）      │
-│ - 不继承角色人格          │
+│ - 不继承角色人格      │
 │ - 完整工具            │
 │ - 沙箱 + 审批策略     │
 └──────────────────────┘
